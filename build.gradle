@@ -1,0 +1,23 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
+    id 'groovy'
+}
+
+group 'eu.proszkie.adventofcode'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+    implementation 'org.codehaus.groovy:groovy:3.0.9'
+
+    testImplementation 'org.spockframework:spock-core:2.1-M2-groovy-3.0'
+}
+
+
+test {
+    useJUnitPlatform()
+}
