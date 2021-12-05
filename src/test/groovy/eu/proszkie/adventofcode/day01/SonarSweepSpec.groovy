@@ -9,7 +9,7 @@ class SonarSweepSpec extends Specification implements WithResourceReadingAbility
 
     def "should properly calculate amount of depth increases"() {
         given:
-        def measurements = getResource('/advent-of-code/first/input1').readLines()
+        def measurements = getResource('/advent-of-code/day01/input1').readLines()
 
         when:
         def amountOfIncreases = sonarSweep.howMuchIncreases(measurements)
@@ -20,7 +20,7 @@ class SonarSweepSpec extends Specification implements WithResourceReadingAbility
 
     def "should properly calculate amount of windowed depth increases"() {
         given:
-        def measurements = getResource('/advent-of-code/first/input3').readLines()
+        def measurements = getResource('/advent-of-code/day01/input3').readLines()
 
         when:
         def amountOfIncreases = sonarSweep.howMuchIncreasesWindowed(measurements)

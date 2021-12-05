@@ -8,7 +8,7 @@ class PositionCalculatorSpec extends Specification implements WithResourceReadin
 
     def "should properly calculate position"() {
         given:
-        def moves = getResource('/advent-of-code/second/input1').readLines()
+        def moves = getResource('/advent-of-code/day02/input1').readLines()
 
         when:
         def position = positionCalculator.calculatePosition(moves)

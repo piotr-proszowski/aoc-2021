@@ -18,8 +18,8 @@ class DiagnosticReportResolverSpec extends Specification implements WithResource
 
         where:
         path                           | expected
-        '/advent-of-code/third/input1' | 198
-        '/advent-of-code/third/input2' | 3309596
+        '/advent-of-code/day03/input1' | 198
+        '/advent-of-code/day03/input2' | 3309596
 
     }
 
@@ -36,6 +36,6 @@ class DiagnosticReportResolverSpec extends Specification implements WithResource
 
         where:
         path                           | _
-        '/advent-of-code/third/input1' | _
+        '/advent-of-code/day03/input1' | _
     }
 }

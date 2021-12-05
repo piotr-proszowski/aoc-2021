@@ -13,14 +13,12 @@ class LifeSupportingCriteriaSpec extends Specification implements WithResourceRe
         LifeSupportingCriteria lsc = LifeSupportingCriteria.@Companion.of(asBinaries)
 
         then:
-//        lsc.oxygenGeneratorRating == 23
-//        lsc.co2ScrubberRating == 10
-        lsc.oxygenGeneratorRating * lsc.co2ScrubberRating == 230
+        lsc.oxygenGeneratorRating * lsc.co2ScrubberRating == expected
 
         where:
-        path                           | _
-        '/advent-of-code/third/input1' | _
-        '/advent-of-code/third/input2' | _
+        path                           | expected
+        '/advent-of-code/day03/input1' | 230
+        '/advent-of-code/day03/input2' | 2981085
 
     }
 }
