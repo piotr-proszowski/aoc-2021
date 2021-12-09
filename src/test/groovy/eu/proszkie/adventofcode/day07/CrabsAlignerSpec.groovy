@@ -28,7 +28,6 @@ class CrabsAlignerSpec extends Specification implements WithResourceReadingAbili
         List<Integer> input = getResource(path).text.split(",").collect { it.toInteger() }
 
         when:
-        def optimalHorizontalPosition = crabsAligner.calculateOptimalHorizontalPosition(input)
         def actual = crabsAligner.calculateTheLeastFuelNeeded(input)
 
         then:
@@ -37,6 +36,6 @@ class CrabsAlignerSpec extends Specification implements WithResourceReadingAbili
         where:
         path                           || expected
         '/advent-of-code/day07/input1' || 168
-        '/advent-of-code/day07/input2' || 96801471
+        '/advent-of-code/day07/input2' || 96798233
     }
 }

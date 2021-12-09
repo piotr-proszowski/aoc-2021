@@ -13,12 +13,13 @@ class HeightMapSpec extends Specification implements WithResourceReadingAbility 
         HeightMap heightMap = HeightMapFactory.@Companion.load(input)
 
         then:
-        heightMap.riskLevels().sum() == expected
+        def actual = heightMap.riskLevels().sum()
+        actual == expected
 
         where:
         path                           || expected
         '/advent-of-code/day09/input1' || 15
-        '/advent-of-code/day09/input2' || 11
+        '/advent-of-code/day09/input2' || 516
     }
 
     def "should find proper basins"() {
@@ -29,12 +30,12 @@ class HeightMapSpec extends Specification implements WithResourceReadingAbility 
         HeightMap heightMap = HeightMapFactory.@Companion.load(input)
 
         then:
-        def solution = heightMap.findProductOfSizesOfThreeBiggestBasins()
-        solution == expected
+        def actual = heightMap.findProductOfNBiggestBasins(3)
+        actual == expected
 
         where:
         path                           || expected
         '/advent-of-code/day09/input1' || 1134
-        '/advent-of-code/day09/input2' || 11
+        '/advent-of-code/day09/input2' || 1023660
     }
 }

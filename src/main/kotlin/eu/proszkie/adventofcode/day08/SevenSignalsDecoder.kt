@@ -3,9 +3,7 @@ package eu.proszkie.adventofcode.day08
 class SevenSignalsDecoder {
     fun decodeAll(signalsWithResults: List<SignalsWithResults>): DecodedSignals {
         return signalsWithResults.map { decode(it.signals, it.results) }
-            .fold(DecodedSignals.empty()) { acc, decodedSignals ->
-                acc.merge(decodedSignals)
-            }
+            .fold(DecodedSignals.empty()) { acc, decodedSignals -> acc.merge(decodedSignals) }
     }
 
     private fun decode(signals: Signals, results: Results): DecodedSignals {
@@ -69,6 +67,7 @@ class SignalsMapping(raw: List<Signal>) {
         return hasValidSize(it, 5)
             .and(hasValidAmountOfCommonSegmentsWith(it, one = 1, four = 2, seven = 2, eight = 5))
     }
+
     private fun isThree(it: Signal): Boolean {
         return hasValidSize(it, 5)
             .and(hasValidAmountOfCommonSegmentsWith(it, one = 2, four = 3, seven = 3, eight = 5))
@@ -90,7 +89,13 @@ class SignalsMapping(raw: List<Signal>) {
     }
 
 
-    private fun hasValidAmountOfCommonSegmentsWith(signal: Signal, one: Int, four: Int, seven: Int, eight: Int): Boolean {
+    private fun hasValidAmountOfCommonSegmentsWith(
+        signal: Signal,
+        one: Int,
+        four: Int,
+        seven: Int,
+        eight: Int
+    ): Boolean {
         return validAmountOfCommonSegments(signal, oneSegments, one)
             .and(validAmountOfCommonSegments(signal, fourSegments, four))
             .and(validAmountOfCommonSegments(signal, sevenSegments, seven))

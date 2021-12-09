@@ -5,9 +5,7 @@ data class LanternfishHerd(private val raw: Map<Lanternfish, Long>) {
     fun afterDays(days: Int) =
         generateSequence(this, LanternfishHerd::afterOneDay)
             .drop(days)
-            .take(1)
-            .toList()
-            .last()
+            .first()
 
     private fun afterOneDay(): LanternfishHerd {
         val herds = raw.map { it.key.nextDay().withValuesMultipliedBy(it.value) }

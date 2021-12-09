@@ -14,6 +14,6 @@ class LanternfishHerdSpec extends Specification implements WithResourceReadingAb
 
         then:
         def size = actual.size()
-        size == 5934
+        size == 1732731810807
     }
 }
