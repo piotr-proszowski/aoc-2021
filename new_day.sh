@@ -17,7 +17,7 @@ echo "DONE!"
 echo "Creating directories..."
 mkdir -p src/test/resources/advent-of-code/day$DAY
 mkdir -p src/main/kotlin/eu/proszkie/adventofcode/day$DAY
-mkdir -p src/test/kotlin/eu/proszkie/adventofcode/day$DAY
+mkdir -p src/test/groovy/eu/proszkie/adventofcode/day$DAY
 echo "DONE!"
 
 echo "Fetching input..."
