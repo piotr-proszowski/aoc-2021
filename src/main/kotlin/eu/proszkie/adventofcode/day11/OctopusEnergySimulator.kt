@@ -2,58 +2,27 @@ package eu.proszkie.adventofcode.day11
 
 class OctopusEnergySimulator {
     fun findFirstStepWhenAllOctopusFlashSimultaneously(octopusGrid: OctopusGrid): Int {
-        return generateSequence(octopusGrid withAll noFlashes().toList()) {
-            val afterNextStep = simulateNextStep(it)
-            afterNextStep.grid withAll afterNextStep.flashes
-        }.indexOfFirst { it.allFlashesThatHappened.size == it.grid.size }
+        TODO()
     }
 
     fun countFlashes(octopusGrid: OctopusGrid, steps: Int): Int {
-        return simulate(octopusGrid, steps).allFlashesThatHappened.size
+        TODO()
     }
 
-    fun simulate(octopusGrid: OctopusGrid, toStep: Int): GridWithAllFlashesWhichHappened {
-        return (0 until toStep)
-            .fold(octopusGrid withAll noFlashes().toList()) { acc, _ ->
-                val gridWithFlashesThatJustHappened = simulateNextStep(acc)
-                val (grid, flashesInCurrentStep) = gridWithFlashesThatJustHappened
-                grid withAll flashesInCurrentStep.toList() + acc.allFlashesThatHappened.toList()
-            }
-    }
-
-    private fun simulateNextStep(gridsWithFlashes: GridWithAllFlashesWhichHappened): GridWithFlashesInCurrentStep{
-        val (grid, _) = gridsWithFlashes
-        val (leveledUpGrid, flashesToApply) = grid.levelUpAll()
-        val updatedGridWithAppliedFlashes = flashesToApply.let(leveledUpGrid::withFlashesApplied)
-        return updatedGridWithAppliedFlashes.grid with updatedGridWithAppliedFlashes.flashes
+    fun simulate(octopusGrid: OctopusGrid, toStep: Int): OctopusGrid {
+        return (1..toStep).fold(octopusGrid) { acc, _ -> acc.nextStep() }
     }
 }
 
-data class OctopusGrid(val grid: Map<Coords, Octopus>) {
-    val size: Int = grid.size
+data class OctopusGrid(private val octopuses: List<Octopus>, private val allFlashesThatHappened: List<Flash> = emptyList()) {
+    private val groupedByCoords = octopuses.groupedByCoords()
+    private val recentFlashes = octopuses.toFlashes()
 
-    fun levelUpAll(): GridWithFlashesInCurrentStep {
-        val octopusesLeveledUp = grid.values.map(Octopus::increaseLevel)
-        return copy(grid = octopusesLeveledUp.groupedByCoords()) with octopusesLeveledUp.toFlashes()
-    }
 
-    fun withFlashesApplied(flashesToApply: Collection<Flash>, flashesAppliedInCurrentStep: Set<Flash> = noFlashes()): GridWithFlashesInCurrentStep {
-        val flashes = flashesToApply.subtract(flashesAppliedInCurrentStep)
-        return if(flashes.isEmpty()) {
-            this with flashesAppliedInCurrentStep
-        } else {
-            val updatedOctopuses = flashes.map(Flash::coords)
-                .flatMap(Coords::adjacent)
-                .map(::Flash)
-                .filter { !flashesAppliedInCurrentStep.contains(it) }
-                .map(Flash::coords)
-                .mapNotNull(grid::get)
-                .filter(Octopus::justFlashed)
-                .map(Octopus::flash)
-
-            return OctopusGrid(grid + updatedOctopuses.groupedByCoords())
-                .withFlashesApplied(updatedOctopuses.toFlashes(), flashes + flashesAppliedInCurrentStep)
-        }
+    fun nextStep(): OctopusGrid {
+        TODO()
+//        return levelUp()
+//            .withFlashesApplied(recentFlashes)
     }
 
 }
@@ -68,7 +37,6 @@ object OctopusGridFactory {
     fun create(lines: List<String>): OctopusGrid {
         return lines.mapIndexed { y, line -> transformLineToOctopuses(line, y) }
             .reduce() { previous, current -> previous + current }
-            .associateBy(Octopus::coords)
             .let(::OctopusGrid)
     }
 
@@ -81,7 +49,7 @@ data class Octopus(val level: Int, val coords: Coords, val justFlashed: Boolean 
     fun increaseLevel(): Octopus =
         when (level) {
             9 -> copy(level = 0, justFlashed = true)
-            else -> copy(level = level + 1)
+            else -> copy(level = level + 1, justFlashed = false)
         }
 
     fun flash(): Octopus = when (level) {
@@ -89,12 +57,6 @@ data class Octopus(val level: Int, val coords: Coords, val justFlashed: Boolean 
         else -> increaseLevel()
     }
 }
-
-data class GridWithAllFlashesWhichHappened(val grid: OctopusGrid, val allFlashesThatHappened: Collection<Flash>)
-data class GridWithFlashesInCurrentStep(val grid: OctopusGrid, val flashes: Collection<Flash>)
-
-private infix fun OctopusGrid.with(flashes: Collection<Flash>) = GridWithFlashesInCurrentStep(this, flashes)
-private infix fun OctopusGrid.withAll(flashes: Collection<Flash>) = GridWithAllFlashesWhichHappened(this, flashes)
 
 private fun noFlashes(): Set<Flash> = emptySet()
 

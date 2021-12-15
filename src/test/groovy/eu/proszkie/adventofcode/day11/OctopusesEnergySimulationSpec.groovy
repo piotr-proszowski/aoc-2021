@@ -21,15 +21,14 @@ class OctopusesEnergySimulationSpec extends Specification implements WithResourc
 
         where:
         path                           | steps || expected
-//        '/advent-of-code/day11/input1' | 2     || 35
-//        '/advent-of-code/day11/input1' | 3     || 80
+        '/advent-of-code/day11/input1' | 2     || 35
+        '/advent-of-code/day11/input1' | 3     || 80
         '/advent-of-code/day11/input1' | 4     || 96
-//        '/advent-of-code/day11/input1' | 100   || 1656
-//        '/advent-of-code/day11/input2' | 100   || 1656
+        '/advent-of-code/day11/input1' | 100   || 1656
     }
 
 
-    def "should properly simulate octopuses energy flow 2"() {
+    def "should properly simulate octopuses energy flow"() {
         given:
         def input = getResource(path).readLines()
         def grid = OctopusGridFactory.INSTANCE.create(input)
@@ -73,7 +72,7 @@ class OctopusesEnergySimulationSpec extends Specification implements WithResourc
         where:
         path                           || expected
         '/advent-of-code/day11/input1' || 195
-        '/advent-of-code/day11/input2' || 195
+//        '/advent-of-code/day11/input2' || 195
 
     }
 }

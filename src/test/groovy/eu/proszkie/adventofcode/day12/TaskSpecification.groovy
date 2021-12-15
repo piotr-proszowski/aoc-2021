@@ -52,6 +52,6 @@ class TaskSpecification extends Specification implements WithResourceReadingAbil
         where:
         path                           || expected
         '/advent-of-code/day12/input1' || 36
-        '/advent-of-code/day12/input2' || 4792
+        '/advent-of-code/day12/input2' || 133360
     }
 }
