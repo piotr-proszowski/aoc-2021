@@ -1,72 +1,97 @@
 package eu.proszkie.adventofcode.day15
 
-class PathFinder(private val riskLevelMap: RiskLevelMap) {
+import java.util.*
+import kotlin.math.abs
+import kotlin.math.sqrt
 
-    fun findPathWithLowestRisk(): Path? {
-        val naiveLowestRiskPath = findNaiveLowestRiskPath()
-        return findPathWithLowestRisk(riskLevelMap.topLeftCorner, naiveLowestRiskPath.totalRisk())
-            .minByOrNull(Path::totalRisk)
+class PathFinder {
+
+    fun findTotalRiskOfPathWithLowestRisk(riskLevelMap: RiskLevelMap): Int {
+        val destination = Coords(riskLevelMap.fields.keys.maxOf { it.x }, riskLevelMap.fields.keys.maxOf { it.y })
+
+        return generateSequence(riskLevelMap, RiskLevelMap::djikstraIteration)
+            .dropWhile { it.at(destination)!!.distance == null }
+            .first()
+            .at(destination)!!.distance!!
     }
 
-    private fun findNaiveLowestRiskPath(): Path {
-        return findNaiveLowestRiskPath(riskLevelMap.topLeftCorner)
-    }
-
-    private fun findNaiveLowestRiskPath(current: RiskLevelField, visited: Set<RiskLevelField> = emptySet()): Path {
-        if (current.coords == riskLevelMap.destination) {
-            return Path(visitedPlusCurrent(current, visited))
-        }
-
-        return current.coords.adjacent()
-            .mapNotNull(riskLevelMap::at)
-            .filter { !visited.contains(it) }
-            .minByOrNull(RiskLevelField::riskLevel)
-            .let { findNaiveLowestRiskPath(it!!, visitedPlusCurrent(current, visited)) }
-    }
-
-    private fun visitedPlusCurrent(
-        current: RiskLevelField,
-        visited: Set<RiskLevelField>
-    ) = if (current == riskLevelMap.topLeftCorner && visited.isEmpty()) visited else visited + current
-
-    private fun findPathWithLowestRisk(
-        current: RiskLevelField?,
-        highBound: Int,
-        visited: Set<RiskLevelField> = emptySet(),
-        riskLevelSum: Int = 0,
-    ): List<Path> {
-        if (current == null) {
-            return emptyList()
-        }
-
-        if (current.coords == riskLevelMap.destination) {
-            return listOf(Path(visitedPlusCurrent(current, visited)))
-        }
-
-        return current.coords.adjacent()
-            .mapNotNull { riskLevelMap.at(it) }
-            .filter { !visited.contains(it) }
-            .filter { riskLevelSum + it.riskLevel < highBound }
-            .flatMap { findPathWithLowestRisk(it, highBound, visitedPlusCurrent(current, visited), riskLevelSum + it.riskLevel) }
-    }
 }
 
-data class RiskLevelMap(private val fields: List<RiskLevelField>, val destination: Coords) {
+data class RiskLevelMap(
+    val fields: MutableMap<Coords, RiskLevelField>,
+    val destination: Coords = Coords(fields.keys.maxOf { it.x }, fields.keys.maxOf { it.y }),
+    val queue: PriorityQueue<RiskLevelField> = minPriorityQueue(fields.get(Coords(0, 0))!!, destination),
+) {
 
-    private val groupedByCoords = fields.associateBy(RiskLevelField::coords)
+    fun djikstraIteration(): RiskLevelMap {
+        val current = queue.poll()
+        val modifiedFields = current.coords.adjacent()
+            .mapNotNull(this::at)
+            .filter { it.distance == null }
+            .map { it.copy(distance = (current.distance ?: 0) + it.riskLevel) }
+
+        queue.addAll(modifiedFields)
+
+        return modifiedFields
+            .let(this::withFieldsOverwritten)
+            .withVisited(current)
+    }
 
     fun at(it: Coords): RiskLevelField? {
-        return groupedByCoords.get(it)
+        return fields.get(it)
     }
 
-    val topLeftCorner: RiskLevelField = at(Coords(0, 0))!!
+    fun withVisited(current: RiskLevelField): RiskLevelMap {
+        fields[current.coords] = current.copy(visited = true)
+        return this
+    }
+
+    fun withFieldsOverwritten(modifiedFields: List<RiskLevelField>): RiskLevelMap {
+        modifiedFields.forEach { fields[it.coords] = it }
+        return this
+    }
+
+    operator fun plus(other: RiskLevelMap): RiskLevelMap {
+        return copy(fields = (fields + other.fields).toMutableMap(), queue = queue)
+    }
+
+    operator fun plus(others: List<RiskLevelMap>): RiskLevelMap {
+        return others.fold(this) { acc, next -> acc + next }
+    }
+
+    fun size(): Int {
+        return fields.size
+    }
 }
 
-data class Path(private val raw: Collection<RiskLevelField>) {
-    fun totalRisk() = raw.sumOf(RiskLevelField::riskLevel)
+private fun minPriorityQueue(initialField: RiskLevelField, destination: Coords): PriorityQueue<RiskLevelField> {
+    val queue = PriorityQueue<RiskLevelField>({ a, b -> (a.distance!!).compareTo(b.distance!!) })
+    queue.add(initialField)
+    return queue
 }
 
-data class RiskLevelField(val riskLevel: Int, val coords: Coords)
+private fun distance(a: Coords, b: Coords): Int {
+    return abs(a.x - b.x) + abs(a.y - b.y)
+}
+
+data class RiskLevelField(
+    val riskLevel: Int,
+    val coords: Coords,
+    val distance: Int? = null,
+    val visited: Boolean = false
+) {
+    fun withIncreasedRiskLevel(): RiskLevelField {
+        val newRiskLevel = when (riskLevel) {
+            9 -> 1
+            else -> riskLevel + 1
+        }
+        return copy(riskLevel = newRiskLevel)
+    }
+
+    fun withNewCoordinate(newCoordinate: Coords): RiskLevelField {
+        return copy(coords = newCoordinate)
+    }
+}
 
 data class Coords(val x: Int, val y: Int) {
     fun adjacent() = listOf(up(), down(), right(), left())
@@ -74,6 +99,14 @@ data class Coords(val x: Int, val y: Int) {
     private fun down() = Coords(x, y - 1)
     private fun right() = Coords(x + 1, y)
     private fun left() = Coords(x - 1, y)
+
+    fun movedOnXAxisBy(size: Int): Coords {
+        return copy(x = x + size)
+    }
+
+    fun movedOnYAxisBy(size: Int): Coords {
+        return copy(y = y + size)
+    }
 }
 
 object RiskLevelMapFactory {
@@ -82,6 +115,47 @@ object RiskLevelMapFactory {
             line.mapIndexed { x, riskLevel ->
                 RiskLevelField(riskLevel.digitToInt(), Coords(x, y))
             }
-        }.let { RiskLevelMap(it, Coords(input.first().length - 1, input.size - 1)) }
+        }.let { RiskLevelMap(it.associateBy(RiskLevelField::coords).toMutableMap()) }
     }
+
+    fun createTilesFromStrings(input: List<String>): RiskLevelMap {
+        val firstTile = input.flatMapIndexed { y, line ->
+            line.mapIndexed { x, riskLevel ->
+                RiskLevelField(riskLevel.digitToInt(), Coords(x, y))
+            }
+        }.let { RiskLevelMap(it.associateBy(RiskLevelField::coords).toMutableMap()) }
+
+        val allTiles =
+            toTilesInRightDirection(firstTile) + toTilesInDownDirection(firstTile).flatMap(this::toTilesInRightDirection)
+        return allTiles.reduce { prev, next -> prev + next }
+    }
+
+    private fun toTilesInRightDirection(initialTile: RiskLevelMap): List<RiskLevelMap> {
+        return (1..4).fold(listOf(initialTile)) { acc, _ ->
+            val lastTile = acc.last()
+            val size = sqrt(lastTile.size().toDouble()).toInt()
+            acc + lastTile.copy(
+                fields = lastTile.fields.map {
+                    val newCoordinate = it.key.movedOnXAxisBy(size)
+                    newCoordinate to it.value.withIncreasedRiskLevel().withNewCoordinate(newCoordinate)
+                }.associate { it.first to it.second }
+                    .toMutableMap()
+            )
+        }
+    }
+
+    private fun toTilesInDownDirection(initialTile: RiskLevelMap): List<RiskLevelMap> {
+        return (1..4).fold(listOf(initialTile)) { acc, _ ->
+            val lastTile = acc.last()
+            val size = sqrt(lastTile.size().toDouble()).toInt()
+            acc + lastTile.copy(
+                fields = lastTile.fields.map {
+                    val newCoordinate = it.key.movedOnYAxisBy(size)
+                    newCoordinate to it.value.withIncreasedRiskLevel().withNewCoordinate(newCoordinate)
+                }.associate { it.first to it.second }
+                    .toMutableMap()
+            )
+        }
+    }
+
 }
