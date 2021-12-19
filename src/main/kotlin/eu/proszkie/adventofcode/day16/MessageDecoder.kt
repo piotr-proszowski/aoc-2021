@@ -1,5 +1,6 @@
 package eu.proszkie.adventofcode.day16
 
+import eu.proszkie.adventofcode.takeWhileInclusive
 import java.lang.Integer.parseInt
 import java.lang.Integer.toBinaryString
 import java.lang.Long.parseLong
@@ -42,15 +43,6 @@ object LiteralValueDecoder {
             .windowed(size = 5, step = 5)
             .takeWhileInclusive { it.first() == '1' }
             .toList()
-    }
-}
-
-fun <T> Sequence<T>.takeWhileInclusive(pred: (T) -> Boolean): Sequence<T> {
-    var shouldContinue = true
-    return takeWhile {
-        val result = shouldContinue
-        shouldContinue = pred(it)
-        result
     }
 }
 
