@@ -70,10 +70,6 @@ private fun minPriorityQueue(initialField: RiskLevelField, destination: Coords):
     return queue
 }
 
-private fun distance(a: Coords, b: Coords): Int {
-    return abs(a.x - b.x) + abs(a.y - b.y)
-}
-
 data class RiskLevelField(
     val riskLevel: Int,
     val coords: Coords,
