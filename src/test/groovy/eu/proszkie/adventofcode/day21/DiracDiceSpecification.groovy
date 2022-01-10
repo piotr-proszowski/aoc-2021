@@ -7,10 +7,10 @@ import static eu.proszkie.adventofcode.day21.GameSnapshotBuilder.gameSnapshot
 class DiracDiceSpecification extends Specification {
     def 'dice should be deterministic'() {
         given:
-        DeterministicDiceState dice = new DeterministicDiceState(1000, 0)
+        DiceState dice = new DeterministicDiceState(1000, 0)
 
         when:
-        DeterministicDiceState next = (1..numOfThrows).inject(dice) { acc, _ -> acc.next() }
+        DiceState next = (1..numOfThrows).inject(dice) { acc, _ -> acc.next().first() }
 
         then:
         next.currentValue == expectedValue
@@ -40,7 +40,7 @@ class DiracDiceSpecification extends Specification {
         }
 
         when:
-        GameSnapshot nextSnapshot = gameSnapshot.next().next()
+        GameSnapshot nextSnapshot = gameSnapshot.next().first().next().first()
 
         then:
         nextSnapshot.worstPlayerScore() == 7
@@ -54,7 +54,7 @@ class DiracDiceSpecification extends Specification {
         }
 
         when:
-        GameSnapshot endOfGame = gameSnapshot.rewindToMomentWhenAnyPlayerReachGivenAmountOfPoints(1000)
+        GameSnapshot endOfGame = gameSnapshot.rewindToMomentWhenAnyPlayerReachGivenAmountOfPoints(1000).entrySet().collect { it.key }.first()
 
         then:
         endOfGame.amountOfDiceThrows() == expectedAmountOfDiceThrows
@@ -65,6 +65,57 @@ class DiracDiceSpecification extends Specification {
         playersPositions || expectedAmountOfDiceThrows | expectedWorstPlayerScore | expectedProduct
         [1: 4, 2: 8]     || 993                        | 745                      | 739785
         [1: 8, 2: 6]     || 747                        | 674                      | 503478
+    }
 
+    def 'dirac dice should produce three results'() {
+        given:
+        DiceState dice = new DiracDice(1, 0)
+
+        when:
+        List<DiceState> results = dice.next()
+
+        then:
+        results.contains(new DiracDice(2, 1))
+        results.contains(new DiracDice(3, 1))
+        results.contains(new DiracDice(1, 1))
+        results.size() == 3
+    }
+
+    def 'should move from one game snapshot to multiple possibilities when playing with dirac dice'() {
+        given:
+        GameSnapshot gameSnapshot = gameSnapshot {
+            playersPositions([1: 1, 2: 3])
+            dice(new DiracDice(1, 0))
+        }
+
+        when:
+        List<GameSnapshot> nextSnapshots = gameSnapshot.next()
+
+        then:
+        nextSnapshots.size() == 27
+    }
+
+    def 'should simulate game with dirac dice until first player wins'() {
+        given:
+        GameSnapshot gameSnapshot = gameSnapshot {
+            it.playersPositions(playersPositions)
+            dice(new DiracDice(1, 0))
+        }
+
+        when:
+        Map<GameSnapshot, Long> snapshots = gameSnapshot.rewindToMomentWhenAnyPlayerReachGivenAmountOfPoints(21)
+
+        then:
+        def results = snapshots.collect {
+            new Tuple2<>(it.key.winnerForThreshold(21), it.value)
+        }.inject([:] as Map<PlayerId, Long>) { acc, next ->
+            acc + [(next[0]): next[1] + (acc[next[0]] ?: 0L)]
+        }
+        results[winner] == expectedAmountOfWinnedGamesByWinner
+
+        where:
+        playersPositions || winner          | expectedAmountOfWinnedGamesByWinner
+        [1: 4, 2: 8]     || new PlayerId(1) | 444356092776315
+        [1: 8, 2: 6]     || new PlayerId(1) | 716241959649754
     }
 }

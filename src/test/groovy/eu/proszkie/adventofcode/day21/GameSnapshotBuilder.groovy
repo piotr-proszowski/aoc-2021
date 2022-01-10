@@ -7,6 +7,7 @@ import groovy.transform.builder.SimpleStrategy
 class GameSnapshotBuilder {
 
     Map<Integer, Integer> playersPositions = [:]
+    DiceState dice = new DeterministicDiceState(1000, 0)
 
     static GameSnapshot gameSnapshot(@DelegatesTo(GameSnapshotBuilder) Closure definition) {
         GameSnapshotBuilder builder = new GameSnapshotBuilder()
@@ -18,8 +19,8 @@ class GameSnapshotBuilder {
         return new GameSnapshot(
                 new Board(playersPositions.collectEntries { [new PlayerId(it.key), new Space(it.value)] }),
                 playersPositions.keySet().collectEntries { [new PlayerId(it), new Score(0L)] },
-                new DeterministicDiceState(1000, 0),
-                playersPositions.collect { new PlayerId(it.key) }
+                playersPositions.collect { new PlayerId(it.key) },
+                dice,
         )
     }
 }
