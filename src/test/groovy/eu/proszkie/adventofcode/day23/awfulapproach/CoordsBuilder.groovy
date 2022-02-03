@@ -1,4 +1,5 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
+
 
 import groovy.transform.builder.Builder
 import groovy.transform.builder.SimpleStrategy

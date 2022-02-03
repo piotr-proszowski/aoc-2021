@@ -1,10 +1,20 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 import eu.proszkie.adventofcode.WithResourceReadingAbility
 import spock.lang.Specification
 
-import static eu.proszkie.adventofcode.day23.BurrowBuilder.*
-import static eu.proszkie.adventofcode.day23.BurrowStateChangeBuilder.*
+import static BurrowBuilder.aBurrow
+import static BurrowBuilder.aBurrowFromFile
+import static BurrowBuilder.aBurrowState
+import static BurrowBuilder.sampleFinalBurrow
+import static BurrowBuilder.sampleNotFinalBurrow
+import static BurrowBuilder.withoutMargins
+import static BurrowStateChangeBuilder.change
+import static BurrowStateChangeBuilder.triesToComebackToTheSpaceInWhichAlreadyItWasDuringSingleWalk
+import static BurrowStateChangeBuilder.triesToMoveIntoRoomInWhichThereIsOtherTypeOfAmphipod
+import static BurrowStateChangeBuilder.triesToStopAndThenGoNotDirectlyToTheRoom
+import static BurrowStateChangeBuilder.triesToStopInsideTheRoom
+import static BurrowStateChangeBuilder.triesToStopOnSpaceImmediatelyOutsideAnyRoom
 
 class BurrowSpecification extends Specification implements WithResourceReadingAbility {
 
@@ -174,10 +184,12 @@ class BurrowSpecification extends Specification implements WithResourceReadingAb
         |  #########  |
        """))
             def burrowState = aBurrowState(burrow)
+            def horizontal = (0 * 1 + 6 * 1) + (2 * 10 + 2 * 10) + (2 * 100 + 0 * 100) + (4 * 1000 + 0 * 1000)
+            def vertical = (0 * 1 + 3 * 1) + (2 * 10 + 2 * 10) + (2 * 100 + 0 * 100) + (3 * 1000 + 0 * 1000)
         when:
             def actual = burrowState.minimalCostToFinalState
         then:
-            actual == (0 * 1 + 6 * 1) + (2 * 10 + 2 * 10) + (2 * 100 + 0 * 100) + (4 * 1000 + 0 * 1000)
+            actual == horizontal + vertical
     }
 
     def 'should find cheapest cost'() {
@@ -191,7 +203,7 @@ class BurrowSpecification extends Specification implements WithResourceReadingAb
         where:
             burrowFile || expected
             'burrow_1' || 12521
-            'burrow_3' || 15160
+//            'burrow_3' || 15160
 //            'burrow_4' || 15160
     }
 

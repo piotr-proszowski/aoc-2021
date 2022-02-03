@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 data class BurrowState(val burrow: Burrow, val energyUsed: Int = 0, val history: List<BurrowStateChange> = listOf()) {
     val amountOfFinalRooms = burrow.amountOfFinalRooms()
@@ -20,7 +20,7 @@ data class BurrowState(val burrow: Burrow, val energyUsed: Int = 0, val history:
     }
 
     private fun applyChange(change: BurrowStateChange): BurrowStateChangeResult {
-        return when (val burrowChange = burrow.applyChange(change, history.lastOrNull())) {
+        return when (val burrowChange = burrow.applyChange(change, history)) {
             is BurrowChangeSucceeded -> toBurrowStateChangeSucceeded(burrowChange, change)
             is BurrowChangeFailed -> BurrowStateChangeFailed(burrowChange)
         }

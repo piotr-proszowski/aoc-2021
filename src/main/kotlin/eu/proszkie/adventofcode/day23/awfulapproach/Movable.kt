@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 sealed class Movable(val energyNeededToMove: Int, val token: Char)
 object Amber : Movable(1, 'A')

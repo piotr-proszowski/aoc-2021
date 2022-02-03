@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 data class Coords(val x: Int, val y: Int) : Comparable<Coords> {
     fun adjacent() = setOf(left(), right(), up(), down())

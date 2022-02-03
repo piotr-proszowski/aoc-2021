@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 data class Room(val allCoords: Set<Coords>, val forToken: Char) {
     val coordsInFrontOfRoom = allCoords.minByOrNull { it.y }!!.up()

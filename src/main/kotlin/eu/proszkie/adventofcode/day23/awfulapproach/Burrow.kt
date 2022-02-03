@@ -1,8 +1,8 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
-import eu.proszkie.adventofcode.day23.Element.FreeSpace
-import eu.proszkie.adventofcode.day23.ElementFactory.fromToken
-import eu.proszkie.adventofcode.day23.MovableFactory.fromElement
+import eu.proszkie.adventofcode.day23.awfulapproach.Element.FreeSpace
+import eu.proszkie.adventofcode.day23.awfulapproach.ElementFactory.fromToken
+import eu.proszkie.adventofcode.day23.awfulapproach.MovableFactory.fromElement
 import java.util.UUID
 import kotlin.math.abs
 
@@ -11,21 +11,22 @@ data class Burrow(
     val burrowId: UUID,
     val stopsCounter: Map<Coords, Int> = mapOf()
 ) {
-    private val elements: Map<Coords, Element> = BurrowsCache.findById(burrowId)!!
+
+    private val elements: Map<Coords, Element> = BurrowCache.findById(burrowId)
     private val movableElements = elements.filter { it.value.isMovable }.mapValues { fromElement(it.value) }
 
     fun isFinal() = rooms.all { it.isFinal(elements) }
     fun allChangeCandidates(): List<BurrowStateChange> {
         return movableElements.entries.flatMap { entry ->
             val (startingCoords, movableElement) = entry
-            startingCoords.adjacent()
+            CoordsCache.getAdjacentFor(startingCoords)
                 .map { destination -> BurrowStateChange(movableElement, startingCoords, destination) }
         }
     }
 
-    fun applyChange(change: BurrowStateChange, previousChange: BurrowStateChange?): BurrowChangeResult {
-        return processChange(change, previousChange)
-            .let { updateStopsCounter(it, change, previousChange) }
+    fun applyChange(change: BurrowStateChange, history: List<BurrowStateChange>): BurrowChangeResult {
+        return processChange(change, history)
+            .let { updateStopsCounter(it, change, history.last()) }
     }
 
     private fun updateStopsCounter(
@@ -76,14 +77,26 @@ data class Burrow(
 
     private fun processChange(
         change: BurrowStateChange,
-        previousChange: BurrowStateChange?
+        history: List<BurrowStateChange>
     ) = (destinationIsFreeSpace(change)
-        ?: movableElementCannotStopAtFrontOfRoom(change, previousChange)
+        ?: movableElementCannotStopAtFrontOfRoom(change, history.last())
         ?: cannotEnterToRoomThatIsNotDesired(change)
-        ?: triesToComebackToTheSpaceInWhichItWasDuringSingleWalk(change, previousChange)
-        ?: triesToStopAndAfterBreakNotGoDirectlyIntoTheRoom(change, previousChange)
-        ?: triesToStopInsideTheRoom(change, previousChange)
-        ?: BurrowChangeSucceeded(copy(burrowId = BurrowsCache.saveOrFindExisting(elements.applyChange(change)))))
+        ?: triesToComebackToTheSpaceInWhichItWasDuringSingleWalk(change, history.last())
+        ?: triesToStopAndAfterBreakNotGoDirectlyIntoTheRoom(change, history.last())
+        ?: triesToStopInsideTheRoom(change, history.last())
+        ?: triesToApplyTheSameChangeTwice(change, history)
+        ?: BurrowChangeSucceeded(copy(burrowId = BurrowCache.getIdFor(elements.applyChange(change)))))
+
+    private fun triesToApplyTheSameChangeTwice(
+        change: BurrowStateChange,
+        history: List<BurrowStateChange>
+    ): BurrowChangeFailed? {
+        return if (history.contains(change)) {
+            TriedToApplyTheSameChangeTwice
+        } else {
+            null
+        }
+    }
 
     private fun Map<Coords, Element>.applyChange(change: BurrowStateChange): Map<Coords, Element> {
         return this.plus(
@@ -213,36 +226,46 @@ data class Burrow(
 
     private fun costToReachDesiredRoom(startingPoint: Coords, token: Char): Int {
         val desiredRoom = rooms.find { it.forToken == token }!!
+        if (desiredRoom.contains(startingPoint)) {
+            return 0
+        }
+
         val multiplier = fromElement(fromToken(token)!!).energyNeededToMove
         return (distanceBetween(startingPoint, desiredRoom)) * multiplier
     }
 
-    private fun distanceBetween(startingPoint: Coords, desiredRoom: Room) =
-        horizontalDistance(startingPoint, desiredRoom) + verticalDistance(startingPoint, desiredRoom)
+    private fun distanceBetween(startingPoint: Coords, desiredRoom: Room): Int {
+        val highestPointInRoom = desiredRoom.coordsInFrontOfRoom.down()
+        return horizontalDistance(startingPoint, highestPointInRoom) + verticalDistance(startingPoint, desiredRoom)
+    }
+
+    private fun horizontalDistance(a: Coords, b: Coords): Int {
+        return abs(b.x - a.x)
+    }
 
     private fun verticalDistance(startingPoint: Coords, desiredRoom: Room): Int {
+        val highestPointInTheRoom = desiredRoom.coordsInFrontOfRoom.down()
         return if (rooms.any { it.contains(startingPoint) }) {
-            abs(startingPoint.y - 1) * 2
+            abs(1 - highestPointInTheRoom.y) + abs(1 - startingPoint.y)
         } else {
-            (desiredRoom.allCoords.first().y - 1)
+            abs(startingPoint.y - highestPointInTheRoom.y)
         }
     }
 
-    private fun horizontalDistance(a: Coords, b: Room): Int {
-        return abs(b.allCoords.first().x - a.x)
-    }
-
-    fun amountOfFinalRooms() = rooms.count { it.isFinal(elements) }
     fun revert(change: BurrowStateChange): Burrow {
         return copy(
             rooms = rooms,
-            burrowId = BurrowsCache.saveOrFindExisting(revertChange(change.startingCoords, change.destination))
+            burrowId = BurrowCache.getIdFor(revertChange(change.startingCoords, change.destination))
         )
     }
 
     private fun revertChange(startingPoint: Coords, destination: Coords): Map<Coords, Element> {
         return elements.plus(startingPoint to elements[destination]!!)
             .plus(destination to FreeSpace)
+    }
+
+    fun amountOfFinalRooms(): Int {
+        return rooms.count { it.isFinal(elements) }
     }
 }
 
@@ -255,3 +278,4 @@ object TriedToStopInFrontOfTheRoom : BurrowChangeFailed()
 object TriedToComebackToTheSpaceInWhichAlreadyItWasDuringSingleWalk : BurrowChangeFailed()
 object TriedToStopAndThenGoNotDirectlyToTheRoom : BurrowChangeFailed()
 object TriedToStopInsideTheRoom : BurrowChangeFailed()
+object TriedToApplyTheSameChangeTwice : BurrowChangeFailed()

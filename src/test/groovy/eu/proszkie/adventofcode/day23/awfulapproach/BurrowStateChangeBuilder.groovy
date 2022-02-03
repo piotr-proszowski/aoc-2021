@@ -1,4 +1,5 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
+
 
 import groovy.transform.builder.Builder
 import groovy.transform.builder.SimpleStrategy
@@ -168,6 +169,41 @@ class BurrowStateChangeBuilder {
                     from { x 4 y 1 }
                     to { x 3 y 1 }
                     element 'C'
+                },
+        ]
+    }
+
+    static List<BurrowStateChange> triesToApplyTheSameChangeTwice() {
+        return [
+                change {
+                    from { x 3 y 2 }
+                    to { x 3 y 1 }
+                    element 'B'
+                },
+                change {
+                    from { x 3 y 1 }
+                    to { x 4 y 1 }
+                    element 'B'
+                },
+                change {
+                    from { x 3 y 3 }
+                    to { x 3 y 2 }
+                    element 'A'
+                },
+                change {
+                    from { x 3 y 2 }
+                    to { x 3 y 1 }
+                    element 'A'
+                },
+                change {
+                    from { x 3 y 1 }
+                    to { x 2 y 1 }
+                    element 'A'
+                },
+                change {
+                    from { x 4 y 1 }
+                    to { x 3 y 1 }
+                    element 'B'
                 },
         ]
     }

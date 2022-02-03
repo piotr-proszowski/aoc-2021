@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 import eu.proszkie.adventofcode.WithResourceReadingAbility
 

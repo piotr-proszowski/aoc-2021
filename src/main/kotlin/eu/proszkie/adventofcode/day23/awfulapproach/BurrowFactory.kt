@@ -1,4 +1,4 @@
-package eu.proszkie.adventofcode.day23
+package eu.proszkie.adventofcode.day23.awfulapproach
 
 object BurrowFactory {
     fun fromString(raw: String): Burrow {
@@ -9,7 +9,7 @@ object BurrowFactory {
             .associate { it.coords to it.element }
 
         val rooms = findRooms(elements)
-        return Burrow(rooms, BurrowsCache.saveOrFindExisting(elements))
+        return Burrow(rooms, BurrowCache.getIdFor(elements))
     }
 
     private fun processLine(it: IndexedValue<String>): List<CoordsWithElement> {
