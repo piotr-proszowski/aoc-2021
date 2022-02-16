@@ -2,7 +2,7 @@ package eu.proszkie.adventofcode.day01
 
 class SonarSweep {
     fun howMuchIncreases(input: List<String>): Int {
-        val measurements = input.map { it.toInt() }
+        val measurements = input.map(String::toInt)
         return howMuchIncreasesInternal(measurements)
     }
 
@@ -17,8 +17,8 @@ class SonarSweep {
     }
 
     fun howMuchIncreasesWindowed(input: List<String>): Int {
-        val measurements = input.map { it.toInt() }
-        val slices = measurements.mapIndexed { index, i -> index.rangeTo(index + 2)}.dropLast(2)
+        val measurements = input.map(String::toInt)
+        val slices = measurements.mapIndexed { index, _ -> index.rangeTo(index + 2)}.dropLast(2)
         val windowed = slices.map { measurements.slice(it).sum() }
 
         return howMuchIncreasesInternal(windowed)

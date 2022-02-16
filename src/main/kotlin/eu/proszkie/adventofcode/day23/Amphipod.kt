@@ -44,11 +44,11 @@ data class MovableAmphipod(
             ?: movesToHallway
     }
 
-    private fun findMovesToHallway(burrowState: BurrowState): List<MoveFromRoomToHallway> {
+    private fun findMovesToHallway(burrowState: BurrowState): List<MoveToHallway> {
         val movesToHallway = burrowState.placesToStandByInHallway().mapNotNull { placeToStandBy ->
             burrowState.findPathBetween(coords, placeToStandBy)
         }.map { path ->
-            MoveFromRoomToHallway(
+            MoveToHallway(
                 path.startingPoint,
                 path.destinationPoint,
                 amphipodType,
@@ -58,7 +58,7 @@ data class MovableAmphipod(
         return movesToHallway
     }
 
-    private fun findMoveToDesiredRoom(burrowState: BurrowState): MoveFromRoomToRoom? {
+    private fun findMoveToDesiredRoom(burrowState: BurrowState): MoveToRoom? {
         if (amphipodIsInDesiredRoom(burrowState)) {
             return null
         }
@@ -66,7 +66,7 @@ data class MovableAmphipod(
 
         return deepestFreeSpace?.let {
             burrowState.findPathBetween(coords, deepestFreeSpace)?.let { path ->
-                MoveFromRoomToRoom(
+                MoveToRoom(
                     path.startingPoint,
                     path.destinationPoint,
                     amphipodType,
@@ -97,21 +97,14 @@ sealed class AmphipodMove {
     abstract val energyNeeded: Int
 }
 
-data class MoveFromRoomToHallway(
+data class MoveToHallway(
     override val from: Coords,
     override val to: Coords,
     override val amphipodType: AmphipodType,
     override val energyNeeded: Int
 ) : AmphipodMove()
 
-data class MoveFromRoomToRoom(
-    override val from: Coords,
-    override val to: Coords,
-    override val amphipodType: AmphipodType,
-    override val energyNeeded: Int
-) : AmphipodMove()
-
-data class MoveFromHallwayToRoom(
+data class MoveToRoom(
     override val from: Coords,
     override val to: Coords,
     override val amphipodType: AmphipodType,

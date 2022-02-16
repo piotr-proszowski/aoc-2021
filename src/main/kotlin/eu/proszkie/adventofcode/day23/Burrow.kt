@@ -73,11 +73,8 @@ data class BurrowState(
 
     private fun withAppliedMove(move: AmphipodMove): BurrowState? {
         return when (move) {
-            is MoveFromRoomToHallway -> copy(
-                energyUsed = move.energyNeeded + energyUsed,
-                amphipods = amphipods.minus(move.from).plus(move.to to amphipods[move.from]!!.withCoords(move.to))
-            )
-            else -> handleMoveIntoRoom(move)
+            is MoveToHallway -> handleMoveToHallway(move)
+            is MoveToRoom -> handleMoveIntoRoom(move)
         }
     }
 
@@ -93,6 +90,11 @@ data class BurrowState(
                 .plus(move.to to amphipods[move.from]?.toNotMovable()!!.withCoords(move.to))
         )
     }
+
+    private fun handleMoveToHallway(move: AmphipodMove) = copy(
+        energyUsed = move.energyNeeded + energyUsed,
+        amphipods = amphipods.minus(move.from).plus(move.to to amphipods[move.from]!!.withCoords(move.to))
+    )
 
     private fun thereIsAmphipodOfOtherTypeInsideTheRoom(desiredRoom: Room): Boolean {
         return desiredRoom.coords.mapNotNull { amphipods[it] }
