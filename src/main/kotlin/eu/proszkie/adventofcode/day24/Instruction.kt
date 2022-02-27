@@ -1,40 +1,45 @@
 package eu.proszkie.adventofcode.day24
 
 sealed class Instruction(val outputRegistry: RegistryName) {
-    fun execute(state: RegistryState, digit: Int? = null): RegistryState {
+    fun execute(state: RegistryState, digit: Long? = null): RegistryState {
         return state.update(this, digit)
     }
 }
 
 sealed class WithoutInput(outputRegistry: RegistryName, val argument: RegistryNameOrPlainValue) :
     Instruction(outputRegistry) {
-    abstract fun calculate(a: Int, b: Int): Int
+    abstract fun calculate(a: Long, b: Long): Long
 }
 
 
-class AddInstruction(private val first: RegistryName, val second: RegistryNameOrPlainValue) :
+class AddInstruction(first: RegistryName, val second: RegistryNameOrPlainValue) :
     WithoutInput(first, second) {
-    override fun calculate(a: Int, b: Int): Int = a + b
+    override fun calculate(a: Long, b: Long): Long =
+        a + b
 }
 
-class MulInstruction(private val first: RegistryName, val second: RegistryNameOrPlainValue) :
+class MulInstruction(first: RegistryName, val second: RegistryNameOrPlainValue) :
     WithoutInput(first, second) {
-    override fun calculate(a: Int, b: Int): Int = a * b
+    override fun calculate(a: Long, b: Long): Long =
+        a * b
 }
 
-class EqlInstruction(private val first: RegistryName, val second: RegistryNameOrPlainValue) :
+class EqlInstruction(first: RegistryName, val second: RegistryNameOrPlainValue) :
     WithoutInput(first, second) {
-    override fun calculate(a: Int, b: Int): Int = if (a == b) 1 else 0
+    override fun calculate(a: Long, b: Long): Long =
+        if (a == b) 1 else 0
 }
 
-class DivInstruction(private val first: RegistryName, val second: RegistryNameOrPlainValue) :
+class DivInstruction(first: RegistryName, val second: RegistryNameOrPlainValue) :
     WithoutInput(first, second) {
-    override fun calculate(a: Int, b: Int): Int = a / b
+    override fun calculate(a: Long, b: Long): Long =
+        a / b
 }
 
-class ModInstruction(private val first: RegistryName, val second: RegistryNameOrPlainValue) :
+class ModInstruction(first: RegistryName, val second: RegistryNameOrPlainValue) :
     WithoutInput(first, second) {
-    override fun calculate(a: Int, b: Int): Int = a % b
+    override fun calculate(a: Long, b: Long): Long =
+        a % b
 }
 
 class InpInstruction(val first: RegistryName) : Instruction(first)

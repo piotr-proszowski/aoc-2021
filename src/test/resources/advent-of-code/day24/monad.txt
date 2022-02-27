@@ -75,7 +75,7 @@ mul x 0
 add x z
 mod x 26
 div z 26
-add x -1
+add x -12
 eql x w
 eql x 0
 mul y 0
@@ -129,7 +129,7 @@ mul x 0
 add x z
 mod x 26
 div z 26
-add x -1
+add x -11
 eql x w
 eql x 0
 mul y 0
@@ -201,7 +201,7 @@ mul x 0
 add x z
 mod x 26
 div z 26
-add x -1
+add x -12
 eql x w
 eql x 0
 mul y 0
@@ -219,7 +219,7 @@ mul x 0
 add x z
 mod x 26
 div z 26
-add x -1
+add x -13
 eql x w
 eql x 0
 mul y 0

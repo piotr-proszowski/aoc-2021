@@ -2,47 +2,89 @@ package eu.proszkie.adventofcode.day24
 
 class ModelNumberFinder(private val monadDefinition: MonadDefinition) {
 
-    val cache: MutableMap<DigitWihIndexAndRegistryState, Int> =
+    private val cache: MutableMap<DigitWihIndexAndRegistryState, Int> =
         object : LinkedHashMap<DigitWihIndexAndRegistryState, Int>(0, 0.75f, true) {
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<DigitWihIndexAndRegistryState, Int>?): Boolean {
-                return size > 100_000
+                return size > 1_000_000
             }
         }
-    var duplicates = 0
 
     fun findHighestValid(): ModelNumber =
-        findHighestValid(9, 0, RegistryState.INITIAL)?.let(::ModelNumber)
+        (9 downTo 1).firstNotNullOfOrNull { digit ->
+            println("Processing digit: $digit")
+            findDesiredNumber(
+                digit = digit,
+                inputState = RegistryState.INITIAL,
+                progression = 9 downTo 1
+            )
+        }?.let(::ModelNumber)
             ?: throw IllegalStateException("not found")
 
-    private fun findHighestValid(digit: Int, index: Int, inputRegistry: RegistryState): String? {
-        val digitWithIndexAndRegistryState = DigitWihIndexAndRegistryState(digit, index, inputRegistry.hashCode())
-        if (cache.contains(digitWithIndexAndRegistryState)) {
-            cache[digitWithIndexAndRegistryState] = cache[digitWithIndexAndRegistryState]!! + 1
-            duplicates += 1
-            return null
-        }
-        cache[digitWithIndexAndRegistryState] = 1
-        val newState = monadDefinition.calculateNthChunk(digit, index, inputRegistry)
-        if (index == 13) {
-            return if (newState.representsValidModelNumber()) {
-                digit.toString()
-            } else {
-                null
+    fun findLowestValid(): ModelNumber =
+        (1..9).firstNotNullOfOrNull { digit ->
+            println("Processing digit: $digit")
+            findDesiredNumber(
+                digit = digit,
+                inputState = RegistryState.INITIAL,
+                progression = 1..9
+            )
+        }?.let(::ModelNumber)
+            ?: throw IllegalStateException("not found")
+
+    private fun findDesiredNumber(
+        prefix: String = "",
+        index: Int = 0,
+        digit: Int,
+        inputState: RegistryState,
+        progression: IntProgression
+    ): String? {
+        if (cacheContains(digit, index, inputState)) return null
+        val newState = monadDefinition.calculateNthChunk(digit, index, inputState)
+        return findNext(index, newState, prefix, digit, progression)
+    }
+
+    private fun findNext(
+        index: Int,
+        newState: RegistryState,
+        prefix: String,
+        digit: Int,
+        progression: IntProgression
+    ): String? {
+        return if (index == 13) {
+            processLastIndex(newState, prefix, digit)
+        } else {
+            progression.firstNotNullOfOrNull { nextDigit ->
+                findDesiredNumber(
+                    prefix = prefix + digit.toString(),
+                    digit = nextDigit,
+                    index = index + 1,
+                    inputState = newState,
+                    progression = progression
+                )
             }
         }
+    }
 
-        val nextIndex = if (index < 13) index + 1 else index
+    private fun processLastIndex(
+        newState: RegistryState,
+        prefix: String,
+        digit: Int
+    ) = if (newState.representsValidModelNumber()) prefix + digit.toString() else null
 
-        return (9 downTo 1).firstNotNullOfOrNull {
-            findHighestValid(it, nextIndex, newState)
-        }?.let {
-            digit.toString() + it
+    private fun cacheContains(digit: Int, index: Int, inputState: RegistryState): Boolean {
+        val digitWithIndexAndRegistryState = DigitWihIndexAndRegistryState(digit, index, inputState)
+        if (cache.contains(digitWithIndexAndRegistryState)) {
+            cache[digitWithIndexAndRegistryState] = cache[digitWithIndexAndRegistryState]!! + 1
+            return true
+        } else {
+            cache[digitWithIndexAndRegistryState] = 1
         }
+        return false
     }
 }
 
 data class DigitWihIndexAndRegistryState(
     val digit: Int,
     val index: Int,
-    val registry: Int
+    val registry: RegistryState
 )

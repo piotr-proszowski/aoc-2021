@@ -40,14 +40,14 @@ sealed class Token {
                 input == "mod" -> ModToken
                 input == "inp" -> InpToken
                 input.length == 1 && input[0].isLetter() -> RegistryToken(input[0])
-                input.toIntOrNull() != null -> PlainValue(input.toInt())
+                input.toLongOrNull() != null -> PlainValue(input.toLong())
                 else -> throw IllegalArgumentException()
             }
     }
 }
 
 data class RegistryToken(val registryName: Char) : Token()
-data class PlainValue(val raw: Int) : Token()
+data class PlainValue(val raw: Long) : Token()
 sealed class InstructionToken : Token()
 object AddToken : InstructionToken()
 object MulToken : InstructionToken()

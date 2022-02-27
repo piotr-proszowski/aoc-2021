@@ -1,11 +1,11 @@
 package eu.proszkie.adventofcode.day24
 
-data class RegistryState(private val variables: Map<RegistryName, Int>) {
-    operator fun get(registryName: Char): Int {
+data class RegistryState(private val variables: Map<RegistryName, Long>) {
+    operator fun get(registryName: Char): Long {
         return variables[RegistryName(registryName)]!!
     }
 
-    fun update(instruction: Instruction, digit: Int?): RegistryState =
+    fun update(instruction: Instruction, digit: Long?): RegistryState =
         when (instruction) {
             is WithoutInput -> handleWithoutInput(instruction)
             is InpInstruction -> copy(variables = variables + (instruction.outputRegistry to digit!!))
@@ -24,7 +24,7 @@ data class RegistryState(private val variables: Map<RegistryName, Int>) {
     }
 
     fun representsValidModelNumber(): Boolean =
-        variables[RegistryName('z')] == 0
+        variables[RegistryName('z')] == 0L
 
     companion object {
         val INITIAL = RegistryState(mapOf(

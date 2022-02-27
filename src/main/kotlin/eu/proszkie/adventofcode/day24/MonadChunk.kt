@@ -2,7 +2,9 @@ package eu.proszkie.adventofcode.day24
 
 class MonadChunk(private val instructions: List<Instruction>) {
     fun calculateRegistryState(digit: Int, inputRegistryState: RegistryState): RegistryState =
-        instructions.fold(inputRegistryState) { state, instruction -> instruction.execute(state, digit) }
+        instructions.fold(inputRegistryState) {
+                state, instruction -> instruction.execute(state, digit.toLong())
+        }
 
     init {
         require(instructions.count { it is InpInstruction } == 1) {

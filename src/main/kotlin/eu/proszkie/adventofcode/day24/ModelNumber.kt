@@ -1,6 +1,6 @@
 package eu.proszkie.adventofcode.day24
 
-class ModelNumber(private val raw: String) {
+data class ModelNumber(private val raw: String) {
     init {
         require(raw.all(Char::isDigit)) { "Model number can consists only of digits" }
         require(
@@ -9,4 +9,7 @@ class ModelNumber(private val raw: String) {
         }
         require(raw.length == 14) { "Model number need to have exactly 14 digits" }
     }
+
+    fun digits() =
+        raw.map(Char::digitToInt)
 }
