@@ -4,6 +4,7 @@ sealed class Packet {
     abstract fun sumUpAllVersions(): Int
     abstract val version: Version
     abstract val typeId: PacketTypeId
+    abstract fun getValue(): Long
 }
 
 data class OperatorPacket(
@@ -14,6 +15,9 @@ data class OperatorPacket(
 ) : Packet() {
     override fun sumUpAllVersions(): Int =
         version.raw + subPackets.sumOf(Packet::sumUpAllVersions)
+
+    override fun getValue(): Long =
+        OperationFactory.fromTypeId(typeId).calculate(subPackets)
 }
 
 data class LiteralValuePacket(
@@ -23,6 +27,9 @@ data class LiteralValuePacket(
 ) : Packet() {
     override fun sumUpAllVersions(): Int =
         version.raw
+
+    override fun getValue(): Long =
+        literalValues.map(LiteralValue::binary).joinToString(separator = "").toLong(2)
 }
 
 data class Version(val raw: Int)

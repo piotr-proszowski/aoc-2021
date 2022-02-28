@@ -5,9 +5,9 @@ import groovy.transform.builder.SimpleStrategy
 
 @Builder(builderStrategy = SimpleStrategy, prefix = '')
 class OperatorPacketBuilder {
-    Integer version
-    Integer typeId
-    Integer lengthTypeId
+    Integer version = 4
+    Integer typeId = 4
+    Integer lengthTypeId = 0
     List<Packet> subPackets
 
     static Packet operatorPacket(@DelegatesTo(OperatorPacketBuilder) Closure definition) {
