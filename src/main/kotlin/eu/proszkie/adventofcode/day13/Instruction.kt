@@ -9,11 +9,11 @@ data class Instruction(private val dots: Set<Dot>) {
         val maxX = dots.maxOf(Dot::x)
         val maxY = dots.maxOf(Dot::y)
 
-        val message = (0..maxX).map { x ->
-            (0..maxY).map { y ->
+        val message = (0..maxX).joinToString(separator = "\n") { x ->
+            (0..maxY).joinToString(separator = " ") { y ->
                 if (dots.any { it.x == x && it.y == y }) "#" else "."
-            }.joinToString(separator = " ")
-        }.joinToString(separator = "\n")
+            }
+        }
 
         print(message)
     }

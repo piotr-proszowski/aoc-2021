@@ -44,7 +44,7 @@ class SyntaxScoring {
     }
 
     private fun firstClosingSign(line: String): Char? {
-        return line.firstOrNull { closingSigns.contains(it) }
+        return line.firstOrNull(closingSigns::contains)
     }
 
     private fun withoutMatchingParenthesis(line: String): String {
