@@ -7,6 +7,24 @@ class CavesDistinctPathsFinder(private val caves: Collection<Cave>) {
         return findPathsToEnd(startingCave, listOf(startingCave.id))
     }
 
+    private fun findPathsToEnd(cave: Cave, alreadyVisitedCaves: List<String>): Collection<Path> {
+        if (cave.id == "end") {
+            return setOf(Path(alreadyVisitedCaves))
+        }
+
+        val desiredCaves =
+            cave.outcoming.mapNotNull(groupedById::get).filter { !isSmallAndWasVisited(it, alreadyVisitedCaves) }
+
+        if (desiredCaves.isEmpty()) {
+            return emptyList()
+        }
+
+        return desiredCaves
+            .map { findPathsToEnd(it, alreadyVisitedCaves + it.id) }
+            .filter { !it.isEmpty() }
+            .flatten()
+    }
+
     fun findDistinctPathsPart2(): Collection<Path> {
         val startingCave = caves.find { it.id == "start" }!!
         return findPathsToEndPart2(startingCave, listOf(startingCave.id))
@@ -39,24 +57,6 @@ class CavesDistinctPathsFinder(private val caves: Collection<Cave>) {
             return false
         }
         return visited.count { it == cave.id } < 2 && cave.id !in listOf("start", "end")
-    }
-
-    private fun findPathsToEnd(cave: Cave, alreadyVisitedCaves: List<String>): Collection<Path> {
-        if (cave.id == "end") {
-            return setOf(Path(alreadyVisitedCaves))
-        }
-
-        val desiredCaves =
-            cave.outcoming.mapNotNull(groupedById::get).filter { !isSmallAndWasVisited(it, alreadyVisitedCaves) }
-
-        if (desiredCaves.isEmpty()) {
-            return emptyList()
-        }
-
-        return desiredCaves
-            .map { findPathsToEnd(it, alreadyVisitedCaves + it.id) }
-            .filter { !it.isEmpty() }
-            .flatten()
     }
 
     private fun isSmallAndWasVisited(cave: Cave, alreadyVisitedCaves: List<String>): Boolean {

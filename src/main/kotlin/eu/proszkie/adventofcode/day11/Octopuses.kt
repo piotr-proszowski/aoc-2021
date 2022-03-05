@@ -6,30 +6,28 @@ data class Octopuses(val coordsToEnergyLevel: Map<Coords, Int>, val amountOfFlas
     fun nextStep(): Octopuses {
         val coordsToProgress: LinkedList<Coords> = LinkedList(coordsToEnergyLevel.keys)
         val coordsToOctopus: MutableMap<Coords, Octopus> = coordsToEnergyLevel.toOctopuses()
-        var flashesCount = amountOfFlashes
         while (!coordsToProgress.isEmpty()) {
             val coords = coordsToProgress.poll()
 
-            coords.let(coordsToOctopus::get)
+            coordsToOctopus[coords]
                 ?.let(Octopus::progress)
-                ?.also { coordsToOctopus[coords] = it }
+                ?.also { octopus -> coordsToOctopus[coords] = octopus }
                 ?.takeIf { it is OctopusThatJustFlashed }
-                ?.also { flashesCount++ }
                 ?.let { coordsToProgress.addAll(coords.adjacent()) }
         }
 
-        return Octopuses(coordsToOctopus.simplify(), flashesCount)
+        return Octopuses(
+            coordsToEnergyLevel = coordsToOctopus.simplify(),
+            amountOfFlashes = amountOfFlashes + coordsToOctopus.countFlashes()
+        )
     }
 
     fun findStepWhenAllOctopusesFlash(): Int =
         generateSequence(this to 0) { (octopuses, step) ->
             octopuses.nextStep() to step + 1
-        }.first { (octopuses, _) ->
-            octopuses.allFlashed()
-        }.second
+        }.first { (octopuses, _) -> octopuses.allFlashed() }.second
 
-    private fun allFlashed() =
-        coordsToEnergyLevel.values.all { it == 0 }
+    private fun allFlashed() = coordsToEnergyLevel.values.all { it == 0 }
 
     override fun toString(): String {
         val groupedByY = coordsToEnergyLevel.entries.groupBy { it.key.y }
@@ -38,6 +36,9 @@ data class Octopuses(val coordsToEnergyLevel: Map<Coords, Int>, val amountOfFlas
         }
     }
 }
+
+private fun Map<Coords, Octopus>.countFlashes(): Int =
+    values.count { it is ExhaustedOctopus || it is OctopusThatJustFlashed }
 
 private fun Map<Coords, Octopus>.simplify(): Map<Coords, Int> = mapValues { it.value.energyLevel }
 
@@ -82,12 +83,14 @@ data class Coords(val x: Int, val y: Int) {
 
 object OctopusesFactory {
     fun fromRowsOfEnergyLevels(rows: List<List<Int>>): Octopuses {
-        require(rows.all { it.all { it in 0..9 } }) { "Energy levels have to be in range <0, 9>" }
+        require(rows.all(this::eachElementIsWithinAllowedRange)) { "Energy levels have to be in range <0, 9>" }
 
         return processRows(rows)
             .associate { it.first to it.second }
             .let(::Octopuses)
     }
+
+    private fun eachElementIsWithinAllowedRange(row: List<Int>) = row.all { energyLevel -> energyLevel in 0..9 }
 
     private fun processRows(rows: List<List<Int>>) =
         rows.flatMapIndexed { yCoord, row ->
